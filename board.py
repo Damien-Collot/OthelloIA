@@ -62,13 +62,10 @@ class Board:
             x += dx
             y += dy
             tiles_to_flip = []
-            print(x)
-            print(y)
             while 0 <= x < 8 and 0 <= y < 8 and self.board[x][y].type == opponent_token:
                 tiles_to_flip.append((x, y))
                 x += dx
                 y += dy
-            print(tiles_to_flip)
             if 0 <= x < 8 and 0 <= y < 8 and self.board[x][y].type == token:
                 for x, y in tiles_to_flip:
                     self.board[x][y].type = token
@@ -85,5 +82,5 @@ class Board:
     def playMove(self, move, player):
         x, y = move
         self.board[x][y] = player.token
-        self.reverse_pawn(move, player.token)
+        self.reverse_pawn(move, player.token.type)
         self.getScore(player)
