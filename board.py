@@ -33,24 +33,6 @@ class Board:
 
         print("  +--------------------------+")
 
-    def display_possible_moves(self, possible_moves):
-        # Réinitialisez la carte à son état d'origine
-        self.board = [
-            [Token(Token.EMPTY) for _ in range(8)] for _ in range(8)
-        ]
-
-        # Utilisez une liste de chiffres pour représenter les coups possibles
-        move_numbers = list(range(1, len(possible_moves) + 1))
-
-        for pion, moves in possible_moves.items():
-            line, column = pion
-            for move in moves:
-                x, y = move
-                self.board[x][y] = Token(Token(move_numbers.pop(0)))
-
-        # Affichez la carte mise à jour avec les coups possibles
-        self.print_board()  # Assurez-vous que vous avez une fonction pour afficher la carte (peut être personnalisée selon vos besoins)
-
     def find_correct_move(self, player):
         posPion = []
         for line in range(len(self.board)):
@@ -61,25 +43,32 @@ class Board:
 
         possible_moves = {}
         directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
+       # print(posPion)
+        move_number = 1  # Initialisation du chiffre pour le premier coup possible
 
         for pion in posPion:
             line, column = pion
-            possible_moves_for_pion = []
             for dx, dy in directions:
                 x, y = line + dx, column + dy
                 while 0 <= x < len(self.board) and 0 <= y < len(self.board[line]):
                     adjacent_position = self.board[x][y]
+
                     if adjacent_position.type == Token.EMPTY:
-                        possible_moves_for_pion.append((x, y))
+                        # Vérifiez si les coordonnées ne sont pas déjà présentes dans la liste des coups possibles
+                        if (x, y) not in possible_moves.values():
+                            # Ajoutez le coup possible au dictionnaire avec le numéro de mouvement
+                            possible_moves[move_number] = (x, y)
+                            move_number += 1
                         break
                     elif adjacent_position.type == player.token.type:
                         break
                     x += dx
                     y += dy
-            if possible_moves_for_pion:
-                possible_moves[pion] = possible_moves_for_pion
 
-        print(possible_moves)
+        #print(possible_moves)
+        for key, value in possible_moves.items():
+            self.board[value[0]][value[1]] = key;
+
         return possible_moves
 
     def find_a_correct_move(self, player):
