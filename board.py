@@ -33,26 +33,54 @@ class Board:
 
         print("  +--------------------------+")
 
+    def display_possible_moves(self, possible_moves):
+        # Réinitialisez la carte à son état d'origine
+        self.board = [
+            [Token(Token.EMPTY) for _ in range(8)] for _ in range(8)
+        ]
+
+        # Utilisez une liste de chiffres pour représenter les coups possibles
+        move_numbers = list(range(1, len(possible_moves) + 1))
+
+        for pion, moves in possible_moves.items():
+            line, column = pion
+            for move in moves:
+                x, y = move
+                self.board[x][y] = Token(Token(move_numbers.pop(0)))
+
+        # Affichez la carte mise à jour avec les coups possibles
+        self.print_board()  # Assurez-vous que vous avez une fonction pour afficher la carte (peut être personnalisée selon vos besoins)
 
     def find_correct_move(self, player):
-        #result = {"1": (1,2)}
         posPion = []
-        # répérer les bons pions à jouer
-        for line in range(0, len(self.board)):
-            for column in range(0, len(self.board)):
+        for line in range(len(self.board)):
+            for column in range(len(self.board)):
                 element = self.board[line][column]
                 if player.token.type == element.type:
                     posPion.append((line, column))
 
-        print(posPion)
-        #vérification du coup jouer
-       # for element in posPion:
+        possible_moves = {}
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
 
+        for pion in posPion:
+            line, column = pion
+            possible_moves_for_pion = []
+            for dx, dy in directions:
+                x, y = line + dx, column + dy
+                while 0 <= x < len(self.board) and 0 <= y < len(self.board[line]):
+                    adjacent_position = self.board[x][y]
+                    if adjacent_position.type == Token.EMPTY:
+                        possible_moves_for_pion.append((x, y))
+                        break
+                    elif adjacent_position.type == player.token.type:
+                        break
+                    x += dx
+                    y += dy
+            if possible_moves_for_pion:
+                possible_moves[pion] = possible_moves_for_pion
 
-
-
-        #modifier la grille
-
+        print(possible_moves)
+        return possible_moves
 
     def reverse_pawn(self, pos, token):
         opponent_token = Token.WHITE if token == Token.BLACK else Token.BLACK
