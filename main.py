@@ -23,10 +23,13 @@ def newGame():
                 else:
                     player2canMove = False
             board.print_board()
-            move = int(input("Choose your move !"))
-            while move not in dictAvailableMove:
-                move = int(input("Wrong choice, please chose a valid move !!"))
-            board.playMove(dictAvailableMove.get(move), p1 if currentPlayer == 1 else p2)
+            if dictAvailableMove == {}:
+                print("Aucun coup possible loser !")
+            else:
+                move = int(input("Choose your move !"))
+                while move not in dictAvailableMove:
+                    move = int(input("Wrong choice, please chose a valid move !!"))
+                board.playMove(dictAvailableMove.get(move), p1 if currentPlayer == 1 else p2)
             print(f"Actual score {p1.name} : {p1.score}, {p2.name} : {p2.score}")
             currentPlayer = 2 if currentPlayer == 1 else 2
             if not player1canMove and not player2canMove:
