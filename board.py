@@ -143,8 +143,15 @@ class Board:
                     score += 1
         player.score = score
 
+    def clear_board(self):
+        for x in range(0, 8):
+            for y in range(0, 8):
+                if isinstance(self.board[x,y], int):
+                    self.board[x][y] = Token(Token.EMPTY)
+
     def playMove(self, move, player):
         x, y = move
         self.board[x][y] = player.token
         self.reverse_pawn(move, player.token.type)
         self.getScore(player)
+        self.clear_board()

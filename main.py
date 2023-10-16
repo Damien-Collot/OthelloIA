@@ -16,7 +16,7 @@ def newGame():
         player1canMove = True
         player2canMove = True
         while not endGame:
-            dictAvailableMove = board.find_correct_move(p1 if currentPlayer == 1 else p2)
+            dictAvailableMove = board.find_a_correct_move(p1 if currentPlayer == 1 else p2)
             if dictAvailableMove == {}:
                 if currentPlayer == 1:
                     player1canMove = False
@@ -24,7 +24,7 @@ def newGame():
                     player2canMove = False
             board.print_board()
             if dictAvailableMove == {}:
-                print("Aucun coup possible loser !")
+                print("No move available !")
             else:
                 move = int(input("Choose your move !"))
                 while move not in dictAvailableMove:
