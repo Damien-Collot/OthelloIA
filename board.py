@@ -82,6 +82,42 @@ class Board:
         print(possible_moves)
         return possible_moves
 
+    def find_a_correct_move(self, player):
+        posPion = []
+        for line in range(len(self.board)):
+            for column in range(len(self.board)):
+                element = self.board[line][column]
+                if player.token.type == element.type:
+                    posPion.append((line, column))
+
+        possible_moves = {}
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
+        opponent_token = Token.WHITE if player.token.type == Token.BLACK else Token.BLACK
+        key_move = 1
+
+        for pion in posPion:
+            line, column = pion
+            for dx, dy in directions:
+                x, y = line + dx, column + dy
+                tiles_to_flip = []
+                while 0 <= x < len(self.board) and 0 <= y < len(self.board[line]) and self.board[x][
+                    y].type == opponent_token:
+                    tiles_to_flip.append((x, y))
+                    x += dx
+                    y += dy
+                if 0 <= x < len(self.board) and 0 <= y < len(self.board[line]) and self.board[x][
+                    y].type == Token.EMPTY and tiles_to_flip:
+                    possible_moves[key_move] = (x, y)
+
+        # For debugging
+        print(possible_moves)
+        for key, value in possible_moves.items():
+            self.board[value[0]][value[1]] = key
+
+
+        return possible_moves
+
+
     def reverse_pawn(self, pos, token):
         opponent_token = Token.WHITE if token == Token.BLACK else Token.BLACK
         directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
