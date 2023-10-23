@@ -1,8 +1,19 @@
 from token import Token
+import copy
 
-
+WEIGHTS = [
+    [5, -2, 4, 2, 2, 4, -2, 5],
+    [-2, -3, -1, 0, 0, -1, -3, -2],
+    [4, -1, 1, 0, 0, 1, -1, 4],
+    [2, 0, 0, 1, 1, 0, 0, 2],
+    [2, 0, 0, 1, 1, 0, 0, 2],
+    [4, -1, 1, 0, 0, 1, -1, 4],
+    [-2, -3, -1, 0, 0, -1, -3, -2],
+    [5, -2, 4, 2, 2, 4, -2, 5]
+]
 
 class Board:
+
     def __init__(self):
         self.board = [
             [Token(Token.EMPTY) for _ in range(8)] for _ in range(8)
@@ -32,50 +43,12 @@ class Board:
 
         print("  +--------------------------+")
 
-    def find_correct_move(self, player):
-        posPion = []
-        for line in range(len(self.board)):
-            for column in range(len(self.board)):
-                element = self.board[line][column]
-                if player.token.type == element.type:
-                    posPion.append((line, column))
-
-        possible_moves = {}
-        directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
-       # print(posPion)
-        move_number = 1  # Initialisation du chiffre pour le premier coup possible
-
-        for pion in posPion:
-            line, column = pion
-            for dx, dy in directions:
-                x, y = line + dx, column + dy
-                while 0 <= x < len(self.board) and 0 <= y < len(self.board[line]):
-                    adjacent_position = self.board[x][y]
-
-                    if adjacent_position.type == Token.EMPTY:
-                        # Vérifiez si les coordonnées ne sont pas déjà présentes dans la liste des coups possibles
-                        if (x, y) not in possible_moves.values():
-                            # Ajoutez le coup possible au dictionnaire avec le numéro de mouvement
-                            possible_moves[move_number] = (x, y)
-                            move_number += 1
-                        break
-                    elif adjacent_position.type == player.token.type:
-                        break
-                    x += dx
-                    y += dy
-
-        #print(possible_moves)
-        for key, value in possible_moves.items():
-            self.board[value[0]][value[1]] = key;
-
-        return possible_moves
-
     def find_a_correct_move(self, player):
         posPion = []
         for line in range(len(self.board)):
             for column in range(len(self.board)):
                 element = self.board[line][column]
-                if player.token.type == element.type:
+                if isinstance(element, Token) and player.token.type == element.type:
                     posPion.append((line, column))
 
         possible_moves = {}
@@ -88,8 +61,8 @@ class Board:
             for dx, dy in directions:
                 x, y = line + dx, column + dy
                 tiles_to_flip = []
-                while 0 <= x < len(self.board) and 0 <= y < len(self.board[line]) and self.board[x][
-                    y].type == opponent_token:
+                while (0 <= x < len(self.board) and 0 <= y < len(self.board[line]) and
+                       isinstance(self.board[x][y], Token) and self.board[x][y].type == opponent_token):
                     tiles_to_flip.append((x, y))
                     x += dx
                     y += dy
@@ -108,25 +81,34 @@ class Board:
     def reverse_pawn(self, pos, token):
         opponent_token = Token.WHITE if token == Token.BLACK else Token.BLACK
         directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+
         for dx, dy in directions:
             x, y = pos
             x += dx
             y += dy
             tiles_to_flip = []
-            while 0 <= x < 8 and 0 <= y < 8 and self.board[x][y].type == opponent_token:
-                tiles_to_flip.append((x, y))
-                x += dx
-                y += dy
-            if 0 <= x < 8 and 0 <= y < 8 and self.board[x][y].type == token:
-                for x, y in tiles_to_flip:
-                    self.board[x][y].type = token
+
+            while 0 <= x < 8 and 0 <= y < 8:
+                cell = self.board[x][y]
+                if isinstance(cell, Token) and cell.type == opponent_token:
+                    tiles_to_flip.append((x, y))
+                    x += dx
+                    y += dy
+                else:
+                    break
+
+            if tiles_to_flip and 0 <= x < 8 and 0 <= y < 8:
+                cell = self.board[x][y]
+                if isinstance(cell, Token) and cell.type == token:
+                    for flip_x, flip_y in tiles_to_flip:
+                        self.board[flip_x][flip_y].type = token
 
     def getScore(self, player):
         score = 0
         for line in range(0, len(self.board)):
             for column in range(0, len(self.board)):
                 element = self.board[line][column]
-                if player.token.type == element.type:
+                if isinstance(element, Token) and player.token.type == element.type:
                     score += 1
         player.score = score
 
