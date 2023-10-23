@@ -11,8 +11,7 @@ class Board:
         self.board[3][4] = Token(Token.BLACK)
         self.board[4][3] = Token(Token.BLACK)
         self.board[4][4] = Token(Token.WHITE)
-
-
+        self.possible_move = {}
 
     def print_board(self):
         # Afficher les numéros de colonne
