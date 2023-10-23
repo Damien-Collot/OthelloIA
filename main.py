@@ -8,34 +8,48 @@ def newGame():
     endGame = False
     if choice == 1:
         playerName = input("Choose a name for player 1 \n")
-        p1 = Player(playerName, Token(Token.BLACK), False)
+        p1 = Player(playerName, Token(Token.WHITE), False)
         playerName = input("Choose a name for player 2\n")
-        p2 = Player(playerName, Token(Token.WHITE), False)
+        p2 = Player(playerName, Token(Token.BLACK), False)
         board = Board()
-        currentPlayer = 1
+        currentPlayer = 2
         player1canMove = True
         player2canMove = True
+
         while not endGame:
-            dictAvailableMove = board.find_a_correct_move(p1 if currentPlayer == 1 else p2)
-            if dictAvailableMove == {}:
+            current_player_obj = p1 if currentPlayer == 1 else p2
+            board.clear_board()
+            dictAvailableMove = board.find_a_correct_move(current_player_obj)
+
+            if not dictAvailableMove:
+                print(f"No move available for {current_player_obj.name}!")
                 if currentPlayer == 1:
                     player1canMove = False
+                    currentPlayer = 2  # We will check if the other player can play
                 else:
                     player2canMove = False
-            board.print_board()
-            if dictAvailableMove == {}:
-                print("No move available !")
+                    currentPlayer = 1  # We will check if the other player can play
             else:
-                move = int(input("Choose your move !"))
+                board.print_board()
+                move = int(input(f"{current_player_obj.name}, choose your move!\n"))
                 while move not in dictAvailableMove:
-                    move = int(input("Wrong choice, please chose a valid move !!"))
-                board.playMove(dictAvailableMove.get(move), p1 if currentPlayer == 1 else p2)
-            print(f"Actual score {p1.name} : {p1.score}, {p2.name} : {p2.score}")
-            currentPlayer = 2 if currentPlayer == 1 else 2
+                    move = int(input("Wrong choice, please chose a valid move !!\n"))
+
+                board.playMove(dictAvailableMove.get(move), current_player_obj)
+
+                print(f"Actual score {p1.name} : {p1.score}, {p2.name} : {p2.score}")
+
+                # Switch player
+                currentPlayer = 1 if currentPlayer == 2 else 2
+
             if not player1canMove and not player2canMove:
                 print("--------Game over-------")
-                print("Player 1 won congrats !!") if p1.score > p2.score else print(
-                    "Player 2 won congrats !!") if p2.score > p1.score else print("It's sadly a tie")
+                if p1.score > p2.score:
+                    print(f"{p1.name} won! Congrats!")
+                elif p2.score > p1.score:
+                    print(f"{p2.name} won! Congrats!")
+                else:
+                    print("It's sadly a tie.")
                 endGame = True
 
 

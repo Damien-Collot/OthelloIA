@@ -94,18 +94,17 @@ class Board:
                     tiles_to_flip.append((x, y))
                     x += dx
                     y += dy
-                if 0 <= x < len(self.board) and 0 <= y < len(self.board[line]) and self.board[x][
-                    y].type == Token.EMPTY and tiles_to_flip:
-                    possible_moves[key_move] = (x, y)
+                if tiles_to_flip and 0 <= x < len(self.board) and 0 <= y < len(self.board[line]) and self.board[x][
+                    y].type == Token.EMPTY:
+                    if (x, y) not in possible_moves.values():
+                        possible_moves[key_move] = (x, y)
+                        key_move += 1
 
-        # For debugging
-        print(possible_moves)
         for key, value in possible_moves.items():
             self.board[value[0]][value[1]] = key
 
-
+        print(f"Moves found for {player.token.type}: {possible_moves}")
         return possible_moves
-
 
     def reverse_pawn(self, pos, token):
         opponent_token = Token.WHITE if token == Token.BLACK else Token.BLACK
@@ -135,12 +134,74 @@ class Board:
     def clear_board(self):
         for x in range(0, 8):
             for y in range(0, 8):
-                if isinstance(self.board[x,y], int):
+                if isinstance(self.board[x][y], int):
                     self.board[x][y] = Token(Token.EMPTY)
 
     def playMove(self, move, player):
+        print(f"{player.token.type} is playing move: {move}")
         x, y = move
         self.board[x][y] = player.token
         self.reverse_pawn(move, player.token.type)
         self.getScore(player)
-        self.clear_board()
+        return True
+
+    def get_copy(self):
+        return copy.deepcopy(self)
+
+    def is_terminal(self):
+        return not self.find_a_correct_move(Token.WHITE) and not self.find_a_correct_move(Token.BLACK)
+
+    def positional_evaluation(self):
+        score = 0
+        for x in range(8):
+            for y in range(8):
+                if self.board[x][y].type == Token.WHITE:
+                    score += WEIGHTS[x][y]
+                elif self.board[x][y].type == Token.BLACK:
+                    score -= WEIGHTS[x][y]
+        return score
+
+    def min_value(self, depth, max_depth):
+        if depth == max_depth or self.is_terminal():
+            return self.positional_evaluation()
+
+        v = float('inf')
+        for move in self.find_a_correct_move(Token.BLACK):
+            copied_board = self.get_copy()
+            copied_board.playMove(move, Token.BLACK)
+            v = min(v, copied_board.max_value(depth + 1, max_depth))
+
+        return v
+
+    def max_value(self, depth, max_depth):
+        if depth == max_depth or self.is_terminal():
+            return self.positional_evaluation()
+
+        v = float('-inf')
+        for move in self.find_a_correct_move(Token.WHITE):
+            copied_board = self.get_copy()
+            copied_board.playMove(move, Token.WHITE)
+            v = max(v, copied_board.min_value(depth + 1, max_depth))
+
+        return v
+
+    def min_max(self, player, depth):
+        possible_moves = self.find_a_correct_move(player)
+
+        # Initialiser la meilleure valeur à un minimum
+        best_value = float('-inf')
+
+        # Parcourir chaque mouvement possible
+        for move in possible_moves.values():  # move est un tuple (x, y)
+            x, y = move
+            current_value = WEIGHTS[x][y]
+
+            # Mise à jour de la meilleure valeur
+            if current_value > best_value:
+                best_value = current_value
+
+        # Stocker la meilleure valeur dans win_move (je l'ai transformé en variable pour simplifier)
+        win_move = best_value
+        print("Min_max best value " + best_value.__str__())
+
+        return win_move
