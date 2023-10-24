@@ -96,6 +96,8 @@ class Board:
                     y += dy
                 else:
                     break
+            if not tiles_to_flip:
+                continue
 
             if tiles_to_flip and 0 <= x < 8 and 0 <= y < 8:
                 cell = self.board[x][y]
