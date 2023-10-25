@@ -8,11 +8,11 @@ def newGame():
     endGame = False
     if choice == 1:
         playerName = input("Choose a name for player 1 \n")
-        p1 = Player(playerName, Token(Token.WHITE), False)
+        p1 = Player(playerName, "X", False)
         playerName = input("Choose a name for player 2\n")
-        p2 = Player(playerName, Token(Token.BLACK), False)
+        p2 = Player(playerName, "O", False)
         board = Board()
-        currentPlayer = 2
+        currentPlayer = 1
         player1canMove = True
         player2canMove = True
 
