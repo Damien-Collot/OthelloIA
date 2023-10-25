@@ -157,16 +157,31 @@ class Board:
         weight = -4
         move = ()
         dict = self.find_a_correct_move(player)
-        print(dict)
-        if dict:
+        if not dict:
+            return move
+        else:
             for key in dict:
                 x, y = dict.get(key)
                 if WEIGHTS[x][y] > weight:
                     weight = WEIGHTS[x][y]
                     move = dict.get(key)
-                    print(f"New Weight : {weight} for move : {move}")
+            return move
+
+    def absolute_play(self, player):
+        score = player.score
+        move = ()
+        dict = self.find_a_correct_move(player)
+        if not dict:
             return move
         else:
+            for key in dict:
+                self.clear_board()
+                b = self.get_copy()
+                b.playMove(dict.get(key), player)
+                b.getScore(player)
+                if player.score > score:
+                    score = player.score
+                    move = dict.get(key)
             return move
 
     def min_value(self, depth, max_depth, player):
