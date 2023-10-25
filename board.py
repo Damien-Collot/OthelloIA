@@ -73,7 +73,6 @@ class Board:
         for key, value in possible_moves.items():
             self.board[value[0]][value[1]] = key
 
-        print(f"Moves found for {player.token}: {possible_moves}")
         return possible_moves
 
     def reverse_pawn(self, pos, token):
@@ -119,7 +118,6 @@ class Board:
                     self.board[x][y] = "."
 
     def playMove(self, move, player):
-        print(f"{player.token} is playing move: {move}")
         x, y = move
         self.board[x][y] = player.token
         self.reverse_pawn(move, player.token)

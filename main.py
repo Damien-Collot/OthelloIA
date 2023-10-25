@@ -4,7 +4,15 @@ from token import Token
 
 
 def newGame():
-    choice = int(input("Chose your mode  : 1v1 (1), 1vAI (2), AIvAI(3)\n"))
+    while True:
+        try:
+            choice = int(input("Chose your mode  : 1v1 (1), 1vAI (2), AIvAI(3)\n"))
+            if choice in [1, 2, 3]:
+                break
+            else:
+                print("Invalid choice. Please choose 1, 2, or 3.")
+        except ValueError:
+            print("Please enter a number.")
     endGame = False
     if choice == 1:
         playerName = input("Choose a name for player 1 \n")
@@ -30,10 +38,16 @@ def newGame():
                     player2canMove = False
                     currentPlayer = 1  # We will check if the other player can play
             else:
-                board.print_board()
-                move = int(input(f"{current_player_obj.name}, choose your move!\n"))
-                while move not in dictAvailableMove:
-                    move = int(input("Wrong choice, please chose a valid move !!\n"))
+                while True:
+                    try:
+                        board.print_board()
+                        move = int(input(f"{current_player_obj.name}, choose your move!\n"))
+                        if move in dictAvailableMove:
+                            break
+                        else:
+                            print("Wrong choice, please chose a valid move !!\n")
+                    except ValueError:
+                        print("Please enter a number.\n")
 
                 board.playMove(dictAvailableMove.get(move), current_player_obj)
 
@@ -43,6 +57,7 @@ def newGame():
                 currentPlayer = 1 if currentPlayer == 2 else 2
 
             if not player1canMove and not player2canMove:
+                board.print_board()
                 print("--------Game over-------")
                 if p1.score > p2.score:
                     print(f"{p1.name} won! Congrats!")
