@@ -139,11 +139,32 @@ class Board:
     def get_copy(self):
         return copy.deepcopy(self)
 
-    def is_terminal(self, player):
-        opponent = Player("Opponent", "O" if player.token == "X" else "X")
-        return not self.find_a_correct_move(player) and not self.find_a_correct_move(opponent)
+    def is_terminal(self):
+        player_moves = self.find_a_correct_move(Player("Temp", "X"))
+        opponent_moves = self.find_a_correct_move(Player("Temp", "O"))
+
+        if not player_moves and not opponent_moves:
+            x_tokens = sum(1 for row in self.board for cell in row if cell == "X")
+            o_tokens = sum(1 for row in self.board for cell in row if cell == "O")
+
+            if x_tokens > o_tokens:
+                return "X"
+            elif o_tokens > x_tokens:
+                return "O"
+            else:
+                return "DRAW"
+        return False
 
     def positional_evaluation(self, player):
+        game_result = self.is_terminal()
+        if game_result:
+            if game_result == player.token:
+                return 1000
+            elif game_result == "DRAW":
+                return 0
+            else:
+                return -1000
+
         score = 0
         for x in range(8):
             for y in range(8):
@@ -185,7 +206,7 @@ class Board:
             return move
 
     def min_value(self, depth, max_depth, player):
-        if depth == max_depth or self.is_terminal(player):
+        if depth == max_depth or self.is_terminal():
             return self.positional_evaluation(player), None
 
         v = float('inf')
@@ -200,7 +221,7 @@ class Board:
         return v, best_move
 
     def max_value(self, depth, max_depth, player):
-        if depth == max_depth or self.is_terminal(player):
+        if depth == max_depth or self.is_terminal():
             return self.positional_evaluation(player), None
 
         v = float('-inf')
@@ -216,21 +237,24 @@ class Board:
 
     def min_max(self, player, depth):
         best_position = None
-        if player.token == "X":
+        if player.token == "O":
             best_value = float('-inf')
             for move, position in self.find_a_correct_move(player).items():
+                self.clear_board()
                 copied_board = self.get_copy()
+                copied_board.print_board()
                 copied_board.playMove(position, player)
-                move_value, _ = copied_board.min_value(1, depth, player)
+                move_value, _ = copied_board.min_value(1, depth, Player("Temp", "O"))
                 if move_value > best_value:
                     best_value = move_value
                     best_position = position
         else:
             best_value = float('inf')
             for move, position in self.find_a_correct_move(player).items():
+                self.clear_board()
                 copied_board = self.get_copy()
                 copied_board.playMove(position, player)
-                move_value, _ = copied_board.max_value(1, depth, player)
+                move_value, _ = copied_board.max_value(1, depth, Player("Temp", "X"))
                 if move_value < best_value:
                     best_value = move_value
                     best_position = position
