@@ -50,7 +50,8 @@ def newGame():
                         print("Please enter a number.\n")
 
                 board.playMove(dictAvailableMove.get(move), current_player_obj)
-
+                board.getScore(p1)
+                board.getScore(p2)
                 print(f"Actual score {p1.name} : {p1.score}, {p2.name} : {p2.score}")
 
                 # Switch player

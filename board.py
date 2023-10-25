@@ -121,7 +121,6 @@ class Board:
         x, y = move
         self.board[x][y] = player.token
         self.reverse_pawn(move, player.token)
-        self.getScore(player)
         return True
 
     def get_copy(self):
