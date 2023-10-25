@@ -1,3 +1,4 @@
+from player import Player
 from token import Token
 import copy
 
@@ -126,16 +127,17 @@ class Board:
     def get_copy(self):
         return copy.deepcopy(self)
 
-    def is_terminal(self):
-        return not self.find_a_correct_move(Token.WHITE) and not self.find_a_correct_move(Token.BLACK)
+    def is_terminal(self, player):
+        opponent = Player("Opponent", "O" if player.token == "X" else "X")
+        return not self.find_a_correct_move(player) and not self.find_a_correct_move(opponent)
 
-    def positional_evaluation(self):
+    def positional_evaluation(self, player):
         score = 0
         for x in range(8):
             for y in range(8):
-                if self.board[x][y] == "X":
+                if self.board[x][y] == player.token:
                     score += WEIGHTS[x][y]
-                elif self.board[x][y] == "O":
+                elif self.board[x][y] == "O" if player.token == "X" else "X":
                     score -= WEIGHTS[x][y]
         return score
 
