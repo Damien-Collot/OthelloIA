@@ -121,8 +121,20 @@ class Board:
     def playMove(self, move, player):
         x, y = move
         self.board[x][y] = player.token
+        self.clear_board()
         self.reverse_pawn(move, player.token)
         return True
+
+    def play_ai(self, ai):
+        move = self.min_max(ai, 3)
+        if not move:
+            return False
+        else:
+            x, y = move
+            self.board[x][y] = ai.token
+            self.clear_board()
+            self.reverse_pawn([x, y], ai.token)
+            return True
 
     def get_copy(self):
         return copy.deepcopy(self)
@@ -141,47 +153,75 @@ class Board:
                     score -= WEIGHTS[x][y]
         return score
 
-    def min_value(self, depth, max_depth):
-        if depth == max_depth or self.is_terminal():
-            return self.positional_evaluation()
+    def positionnal_play(self, player):
+        weight = -4
+        move = ()
+        dict = self.find_a_correct_move(player)
+        print(dict)
+        if dict:
+            for key in dict:
+                x, y = dict.get(key)
+                if WEIGHTS[x][y] > weight:
+                    weight = WEIGHTS[x][y]
+                    move = dict.get(key)
+                    print(f"New Weight : {weight} for move : {move}")
+            return move
+        else:
+            return move
+
+    def min_value(self, depth, max_depth, player):
+        if depth == max_depth or self.is_terminal(player):
+            return self.positional_evaluation(player), None
 
         v = float('inf')
-        for move in self.find_a_correct_move(Token.BLACK):
+        best_move = None
+        for move in self.find_a_correct_move(player):
             copied_board = self.get_copy()
-            copied_board.playMove(move, Token.BLACK)
-            v = min(v, copied_board.max_value(depth + 1, max_depth))
+            copied_board.playMove(move, player)
+            value, _ = copied_board.max_value(depth + 1, max_depth, player)
+            if value < v:
+                v = value
+                best_move = move
+        return v, best_move
 
-        return v
-
-    def max_value(self, depth, max_depth):
-        if depth == max_depth or self.is_terminal():
-            return self.positional_evaluation()
+    def max_value(self, depth, max_depth, player):
+        if depth == max_depth or self.is_terminal(player):
+            return self.positional_evaluation(player), None
 
         v = float('-inf')
-        for move in self.find_a_correct_move(Token.WHITE):
+        best_move = None
+        for move in self.find_a_correct_move(player):
             copied_board = self.get_copy()
-            copied_board.playMove(move, Token.WHITE)
-            v = max(v, copied_board.min_value(depth + 1, max_depth))
-
-        return v
+            copied_board.playMove(move, player)
+            value, _ = copied_board.min_value(depth + 1, max_depth, player)
+            if value > v:
+                v = value
+                best_move = move
+        return v, best_move
 
     def min_max(self, player, depth):
-        possible_moves = self.find_a_correct_move(player)
+        best_position = None
+        if player.token == "X":
+            best_value = float('-inf')
+            for move, position in self.find_a_correct_move(player).items():
+                copied_board = self.get_copy()
+                copied_board.playMove(position, player)
+                move_value, _ = copied_board.min_value(1, depth, player)
+                if move_value > best_value:
+                    best_value = move_value
+                    best_position = position
+        else:
+            best_value = float('inf')
+            for move, position in self.find_a_correct_move(player).items():
+                copied_board = self.get_copy()
+                copied_board.playMove(position, player)
+                move_value, _ = copied_board.max_value(1, depth, player)
+                if move_value < best_value:
+                    best_value = move_value
+                    best_position = position
 
-        # Initialiser la meilleure valeur à un minimum
-        best_value = float('-inf')
+        print(
+            f"L'IA (Token: {player.token}) a décidé de jouer sur la position: {best_position} avec une valeur estimée "
+            f"de: {best_value}")
+        return best_position
 
-        # Parcourir chaque mouvement possible
-        for move in possible_moves.values():  # move est un tuple (x, y)
-            x, y = move
-            current_value = WEIGHTS[x][y]
-
-            # Mise à jour de la meilleure valeur
-            if current_value > best_value:
-                best_value = current_value
-
-        # Stocker la meilleure valeur dans win_move (je l'ai transformé en variable pour simplifier)
-        win_move = best_value
-        print("Min_max best value " + best_value.__str__())
-
-        return win_move
