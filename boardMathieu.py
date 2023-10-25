@@ -167,9 +167,8 @@ class Board:
             # min
             else:
                 if depth >= 0:
-
-            tr
-            isMax = not isMax
-            #traitement du minee.append(newBranch)
+                    depth -= depth
+                    isMax = not isMax
+                    #traitement du minee.append(newBranch)
 
         return False
