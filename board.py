@@ -13,6 +13,7 @@ WEIGHTS = [
     [5, -2, 4, 2, 2, 4, -2, 5]
 ]
 
+
 class Board:
 
     def __init__(self):
@@ -62,11 +63,13 @@ class Board:
             for dx, dy in directions:
                 x, y = line + dx, column + dy
                 tiles_to_flip = []
-                while 0 <= x < len(self.board) and 0 <= y < len(self.board[line]) and self.board[x][y] == opponent_token:
+                while 0 <= x < len(self.board) and 0 <= y < len(self.board[line]) and self.board[x][
+                    y] == opponent_token:
                     tiles_to_flip.append((x, y))
                     x += dx
                     y += dy
-                if tiles_to_flip and 0 <= x < len(self.board) and 0 <= y < len(self.board[line]) and self.board[x][y] == ".":
+                if tiles_to_flip and 0 <= x < len(self.board) and 0 <= y < len(self.board[line]) and self.board[x][
+                    y] == ".":
                     if (x, y) not in possible_moves.values():
                         possible_moves[key_move] = (x, y)
                         key_move += 1
@@ -178,6 +181,22 @@ class Board:
                 elif self.board[x][y] == "O" if player.token == "X" else "X":
                     score -= WEIGHTS[x][y]
         return score
+
+    def mobility_evalutation(self, ai_token):
+        # Maximise le nombre de coups possible
+        ai_moves = len(self.find_a_correct_move(Player("Temp", ai_token)))
+        opponent_token = "X" if ai_token == "O" else "O"
+        opponent_moves = len(self.find_a_correct_move(Player("Temp", opponent_token)))
+
+        # Favoriser les coins.
+        corner_bonus = 0
+        for x, y in [(0, 0), (0, 7), (7, 0), (7, 7)]:
+            if self.board[x][y] == ai_token:
+                corner_bonus += 5
+            elif self.board[x][y] == opponent_token:
+                corner_bonus -= 5
+
+        return (ai_moves - opponent_moves) + corner_bonus
 
     def positionnal_play(self, player):
         weight = -4
