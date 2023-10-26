@@ -126,7 +126,12 @@ class Board:
         return True
 
     def play_ai(self, ai):
-        move = self.min_max(ai, 3)
+        value = -4
+        listValues = self.min_max_maison(ai, 3, False)
+        move = ()
+        for weight, position in listValues:
+            if weight > value:
+                move = position
         if not move:
             return False
         else:
@@ -263,4 +268,24 @@ class Board:
             f"L'IA (Token: {player.token}) a décidé de jouer sur la position: {best_position} avec une valeur estimée "
             f"de: {best_value}")
         return best_position
+
+    def opponent(self, player):
+        opponent = Player("Opponent", "O" if player.token == "X" else "X")
+        return opponent if player.token == "O" else player
+
+    def min_max_maison(self, player, depth, isMax, position=()):
+        list = []
+        if depth == 0:
+            return WEIGHTS[position[0]][position[1]], position
+
+        for move, position in self.find_a_correct_move(player).items():
+            self.clear_board()
+            copied_board = self.get_copy()
+            copied_board.playMove(position, player)
+            list.append(self.min_max_maison(self.opponent(player), depth - 1, not isMax, position))
+            # manque le lien avec weight et le return de la fonction
+
+
+        print(list)
+        return list
 
