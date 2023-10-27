@@ -259,41 +259,12 @@ class Board:
                 best_move = move
         return v, best_move
 
-    def min_max(self, player, depth):
-        best_position = None
-        if player.token == "O":
-            best_value = float('-inf')
-            for move, position in self.find_a_correct_move(player).items():
-                self.clear_board()
-                copied_board = self.get_copy()
-                copied_board.print_board()
-                copied_board.playMove(position, player)
-                move_value, _ = copied_board.min_value(1, depth, Player("Temp", "O"))
-                if move_value > best_value:
-                    best_value = move_value
-                    best_position = position
-        else:
-            best_value = float('inf')
-            for move, position in self.find_a_correct_move(player).items():
-                self.clear_board()
-                copied_board = self.get_copy()
-                copied_board.playMove(position, player)
-                move_value, _ = copied_board.max_value(1, depth, Player("Temp", "X"))
-                if move_value < best_value:
-                    best_value = move_value
-                    best_position = position
-
-        print(
-            f"L'IA (Token: {player.token}) a décidé de jouer sur la position: {best_position} avec une valeur estimée "
-            f"de: {best_value}")
-        return best_position
-
     def opponent(self, player):
         opponent = Player("Opponent", "O" if player.token == "X" else "X")
         return opponent if player.token == "O" else player
 
     def min_max_maison(self, player, depth, isMax, position=()):
-        list = []
+        value = None
         if depth == 0:
             return WEIGHTS[position[0]][position[1]], position
 
@@ -301,10 +272,15 @@ class Board:
             self.clear_board()
             copied_board = self.get_copy()
             copied_board.playMove(position, player)
-            list.append(self.min_max_maison(self.opponent(player), depth - 1, not isMax, position))
+            temp = self.min_max_maison(self.opponent(player), depth - 1, not isMax, position)
             # manque le lien avec weight et le return de la fonction
-
-
-        print(list)
-        return list
-
+            # il faut return la valeur au lieu de la mettre dans une liste
+            # avant de la return il faut verifier le max et le min
+            print(temp)
+            if isMax:
+                # si la temp est plus grand que la value actuelle alors value = temp
+                print(temp)
+            else:
+                # si la temp est plus petite que la value actuelle alors value = temp
+                print(temp)
+        return value
