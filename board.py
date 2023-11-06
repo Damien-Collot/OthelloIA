@@ -266,6 +266,7 @@ class Board:
     def min_max_maison(self, player, depth, isMax, position=()):
         value = None
         if depth == 0:
+            #print(WEIGHTS[position[0]][position[1]])
             return WEIGHTS[position[0]][position[1]], position
 
         for move, position in self.find_a_correct_move(player).items():
@@ -284,3 +285,38 @@ class Board:
                 # si la temp est plus petite que la value actuelle alors value = temp
                 print(temp)
         return value
+
+    def min_max_bot(self, board, player, depth, isMax, alpha=float('-inf'), beta=float('inf')):
+        # Si l'état du jeu est terminal ou la profondeur est 0, évaluez l'état du jeu.
+        if depth == 0 or board.is_terminal():
+            return board.positional_evaluation(player), ()
+
+        if isMax:
+            maxEval = float('-inf')
+            best_move = ()
+            for move, position in board.find_a_correct_move(player).items():
+                # Jouez le coup et créez un nouveau plateau
+                new_board = board.get_copy()
+                new_board.playMove(position, player)
+                evaluation = self.min_max_maison(new_board, self.opponent(player), depth - 1, False, alpha, beta)[0]
+                if evaluation > maxEval:
+                    maxEval = evaluation
+                    best_move = position
+                    alpha = max(alpha, evaluation)
+                    #if beta <= alpha:
+                    #    break
+            return maxEval, best_move
+        else:
+            minEval = float('inf')
+            best_move = ()
+            for move, position in board.find_a_correct_move(player).items():
+                new_board = board.get_copy()
+                new_board.playMove(position, player)
+                evaluation = self.min_max_maison(new_board, self.opponent(player), depth - 1, True, alpha, beta)[0]
+                if evaluation < minEval:
+                    minEval = evaluation
+                    best_move = position
+                    beta = min(beta, evaluation)
+                    #if beta <= alpha:
+                    #    break
+            return minEval, best_move

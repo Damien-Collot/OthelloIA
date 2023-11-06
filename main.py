@@ -56,6 +56,7 @@ def newGame():
                 board.getScore(p2)
                 print(f"Actual score {p1.name} : {p1.score}, {p2.name} : {p2.score}")
 
+
                 # Switch player
                 currentPlayer = 1 if currentPlayer == 2 else 2
 
@@ -135,6 +136,8 @@ def newGame():
             board.getScore(ai1)
             board.getScore(ai2)
             print(f"Actual score {ai1.name} : {ai1.score}, {ai2.name} : {ai2.score}")
+
+
 
             # Switch player
             currentPlayer = 1 if currentPlayer == 2 else 2
