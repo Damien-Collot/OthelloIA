@@ -3,6 +3,7 @@ import time
 from board import Board
 from player import Player
 from token import Token
+import random
 
 
 def newGame():
@@ -127,14 +128,25 @@ def newGame():
         ai11canMove = True
         ai2canMove = True
         while not endGame:
-            current_player_obj = ai1 if currentPlayer == 1 else ai2
             board.clear_board()
-            if current_player_obj == ai1:
+            if currentPlayer == 1:
                 ai11canMove = board.play_ai(ai1)
             else:
                 ai2canMove = board.play_ai(ai2)
+                #bite = board.find_a_correct_move(ai2)
+                #if not bite:
+                #   ai2canMove = False
+                #else:
+                    #rand = random.randint(0, len(bite) - 1)
+
+                # #   move_index = random.choice(list(bite.keys()))
+                # board.playMove(bite[move_index], ai2)
+
+                    #board.playMove(bite[rand], ai2)
+                #    ai2canMove = True
             board.getScore(ai1)
             board.getScore(ai2)
+            board.print_board()
             print(f"Actual score {ai1.name} : {ai1.score}, {ai2.name} : {ai2.score}")
 
 
@@ -144,9 +156,9 @@ def newGame():
             if not ai11canMove and not ai2canMove:
                 board.print_board()
                 print("--------Game over-------")
-                if ai1.score > ai1.score:
+                if ai1.score > ai2.score:
                     print(f"{ai1.name} won! Congrats!")
-                elif ai2.score > ai2.score:
+                elif ai2.score > ai1.score:
                     print(f"{ai2.name} won! Congrats!")
                 else:
                     print("It's sadly a tie.")

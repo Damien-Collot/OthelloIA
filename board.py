@@ -130,14 +130,11 @@ class Board:
 
     def play_ai(self, ai):
         value = -4
-        listValues = self.min_max_maison(ai, 3, False)
-        move = ()
-        for weight, position in listValues:
-            if weight > value:
-                move = position
-        if not move:
+        listValues = self.min_max_maison(self.get_copy(), ai, 5, True)
+        if listValues is N:
             return False
         else:
+            move = listValues[1]
             x, y = move
             self.board[x][y] = ai.token
             self.clear_board()
@@ -263,28 +260,39 @@ class Board:
         opponent = Player("Opponent", "O" if player.token == "X" else "X")
         return opponent if player.token == "O" else player
 
-    def min_max_maison(self, player, depth, isMax, position=()):
-        value = None
+    def min_max_maison(self, board, player, depth, isMax, position=(), value=()):
         if depth == 0:
             #print(WEIGHTS[position[0]][position[1]])
             return WEIGHTS[position[0]][position[1]], position
+        dic_pos = self.find_a_correct_move(player)
+        if dic_pos and len(dic_pos) > 1:
+            res = 0
+            for i in range(1, len(dic_pos)):
+                self.clear_board()
+                pos = dic_pos.get(i)
+                board.playMove(pos, player)
+                value = WEIGHTS[pos[0]][pos[1]], pos
+                temp = self.min_max_maison(board, self.opponent(player), depth - 1, not isMax, dic_pos.get(i), value)
+                # manque le lien avec weight et le return de la fonction
+                # il faut return la valeur au lieu de la mettre dans une liste
+                # avant de la return il faut verifier le max et le min
+                #print(temp)
+                #print(value)
 
-        for move, position in self.find_a_correct_move(player).items():
-            self.clear_board()
-            copied_board = self.get_copy()
-            copied_board.playMove(position, player)
-            temp = self.min_max_maison(self.opponent(player), depth - 1, not isMax, position)
-            # manque le lien avec weight et le return de la fonction
-            # il faut return la valeur au lieu de la mettre dans une liste
-            # avant de la return il faut verifier le max et le min
-            print(temp)
-            if isMax:
-                # si la temp est plus grand que la value actuelle alors value = temp
-                print(temp)
-            else:
-                # si la temp est plus petite que la value actuelle alors value = temp
-                print(temp)
-        return value
+                if temp is None:
+                    temp = value
+                if isMax:
+                    # si la temp est plus grand que la value actuelle alors value = temp
+                    if value[0] > temp[0]:
+                        res = value
+                    else:
+                        res = temp
+                else:
+                    if temp[0] < value[0]:
+                        res =  value
+                    else:
+                        res = temp
+            return res
 
     def min_max_bot(self, board, player, depth, isMax, alpha=float('-inf'), beta=float('inf')):
         # Si l'état du jeu est terminal ou la profondeur est 0, évaluez l'état du jeu.
