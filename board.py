@@ -160,25 +160,6 @@ class Board:
                 return "DRAW"
         return False
 
-    def positional_evaluation(self, player):
-        game_result = self.is_terminal()
-        if game_result:
-            if game_result == player.token:
-                return 1000
-            elif game_result == "DRAW":
-                return 0
-            else:
-                return -1000
-
-        score = 0
-        for x in range(8):
-            for y in range(8):
-                if self.board[x][y] == player.token:
-                    score += WEIGHTS[x][y]
-                elif self.board[x][y] == "O" if player.token == "X" else "X":
-                    score -= WEIGHTS[x][y]
-        return score
-
     def mobility_evalutation(self, board, ai):
         # Maximise le nombre de coups possible
         ai_moves = len(board.find_a_correct_move(Player("Temp", ai)))
@@ -218,71 +199,72 @@ class Board:
         opponent = Player("Opponent", "O" if player.token == "X" else "X")
         return opponent if player.token == "O" else player
 
-    def min_max_maison(self, board, player, depth, isMax, position=(), value=()):
+
+    def minimax(self, board, depth, maximizing_player, player, nbCoup):
         if depth == 0:
-            #print(WEIGHTS[position[0]][position[1]])
-            return WEIGHTS[position[0]][position[1]], position
-        dic_pos = self.find_a_correct_move(player)
-        if dic_pos and len(dic_pos) > 1:
-            res = 0
-            for i in range(1, len(dic_pos)):
-                self.clear_board()
-                pos = dic_pos.get(i)
-                board.playMove(pos, player)
-                value = WEIGHTS[pos[0]][pos[1]], pos
-                temp = self.min_max_maison(board, self.opponent(player), depth - 1, not isMax, dic_pos.get(i), value)
-                # manque le lien avec weight et le return de la fonction
-                # il faut return la valeur au lieu de la mettre dans une liste
-                # avant de la return il faut verifier le max et le min
-                #print(temp)
-                #print(value)
+            if nbCoup < 20:
+                return self.positionnal_play(board, player)
+            elif nbCoup < 50:
+                return self.mobility_evalutation(board, player)
+            else:
+                return self.absolute_play(board, player)
 
-                if temp is None:
-                    temp = value
-                if isMax:
-                    # si la temp est plus grand que la value actuelle alors value = temp
-                    if value[0] > temp[0]:
-                        res = value
-                    else:
-                        res = temp
-                else:
-                    if temp[0] < value[0]:
-                        res =  value
-                    else:
-                        res = temp
-            return res
+        legal_moves = board.find_a_correct_move(player)
+        board.clear_board()
 
-    def min_max_bot(self, board, player, depth, isMax, alpha=float('-inf'), beta=float('inf')):
-        # Si l'état du jeu est terminal ou la profondeur est 0, évaluez l'état du jeu.
-        if depth == 0 or board.is_terminal():
-            return board.positional_evaluation(player), ()
-
-        if isMax:
-            maxEval = float('-inf')
-            best_move = ()
-            for move, position in board.find_a_correct_move(player).items():
-                # Jouez le coup et créez un nouveau plateau
+        if maximizing_player:
+            max_eval = float('-inf')
+            for position in legal_moves.values():
+                board.playMove(position, player)
                 new_board = board.get_copy()
-                new_board.playMove(position, player)
-                evaluation = self.min_max_maison(new_board, self.opponent(player), depth - 1, False, alpha, beta)[0]
-                if evaluation > maxEval:
-                    maxEval = evaluation
-                    best_move = position
-                    alpha = max(alpha, evaluation)
-                    #if beta <= alpha:
-                    #    break
-            return maxEval, best_move
+                eval = self.minimax(new_board, depth - 1, False, self.opponent(player), nbCoup+1)
+                max_eval = max(max_eval, eval)
+            return max_eval
         else:
-            minEval = float('inf')
-            best_move = ()
-            for move, position in board.find_a_correct_move(player).items():
+            min_eval = float('inf')
+            for position in legal_moves.values():
+                board.playMove(position, player)
                 new_board = board.get_copy()
-                new_board.playMove(position, player)
-                evaluation = self.min_max_maison(new_board, self.opponent(player), depth - 1, True, alpha, beta)[0]
-                if evaluation < minEval:
-                    minEval = evaluation
-                    best_move = position
-                    beta = min(beta, evaluation)
-                    #if beta <= alpha:
-                    #    break
-            return minEval, best_move
+                eval = self.minimax(new_board, depth - 1, True, self.opponent(player), nbCoup+1)
+                min_eval = min(min_eval, eval)
+            return min_eval
+
+    def make_best_move(self, player, nbCoup):
+        legal_moves = self.find_a_correct_move(player)
+        self.clear_board()
+        best_move = None
+        best_eval = float('-inf')
+
+        for position in legal_moves.values():
+            board = self.get_copy()
+            board.playMove(position, player)
+            #jouer le  coup il faut
+            eval = self.minimax(board, 3, True, player, nbCoup)
+            if eval > best_eval:
+                best_eval = eval
+                best_move = position
+        if best_move is None:
+            return False
+        else:
+            self.playMove(best_move, player)
+            return True
+
+    def make_best_move_2(self, player, nbCoup):
+        legal_moves = self.find_a_correct_move(player)
+        self.clear_board()
+        best_move = None
+        best_eval = float('-inf')
+
+        for position in legal_moves.values():
+            board = self.get_copy()
+            board.playMove(position, player)
+            #jouer le  coup il faut
+            eval = self.minimax(board, 3, True, player, nbCoup)
+            if eval > best_eval:
+                best_eval = eval
+                best_move = position
+        if best_move is None:
+            return False
+        else:
+            self.playMove(best_move, player)
+            return True
