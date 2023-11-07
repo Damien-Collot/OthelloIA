@@ -130,8 +130,8 @@ class Board:
 
     def play_ai(self, ai):
         value = -4
-        listValues = self.min_max_maison(self.get_copy(), ai, 5, True)
-        if listValues is N:
+        listValues = self.min_max_maison(self.get_copy(), ai, 0, True)
+        if listValues is None:
             return False
         else:
             move = listValues[1]
@@ -179,82 +179,40 @@ class Board:
                     score -= WEIGHTS[x][y]
         return score
 
-    def mobility_evalutation(self, ai_token):
+    def mobility_evalutation(self, board, ai):
         # Maximise le nombre de coups possible
-        ai_moves = len(self.find_a_correct_move(Player("Temp", ai_token)))
-        opponent_token = "X" if ai_token == "O" else "O"
-        opponent_moves = len(self.find_a_correct_move(Player("Temp", opponent_token)))
+        ai_moves = len(board.find_a_correct_move(Player("Temp", ai)))
+        board.clear_board()
+        opponent_token = "X" if ai.token == "O" else "O"
+        opponent_moves = len(board.find_a_correct_move(Player("Temp", self.opponent(ai))))
+        board.clear_board()
 
         # Favoriser les coins.
         corner_bonus = 0
         for x, y in [(0, 0), (0, 7), (7, 0), (7, 7)]:
-            if self.board[x][y] == ai_token:
+            if board.board[x][y] == ai.token:
                 corner_bonus += 5
-            elif self.board[x][y] == opponent_token:
+            elif board.board[x][y] == opponent_token:
                 corner_bonus -= 5
 
         return (ai_moves - opponent_moves) + corner_bonus
 
-    def positionnal_play(self, player):
-        weight = -4
-        move = ()
-        dict = self.find_a_correct_move(player)
-        if not dict:
-            return move
-        else:
-            for key in dict:
-                x, y = dict.get(key)
-                if WEIGHTS[x][y] > weight:
-                    weight = WEIGHTS[x][y]
-                    move = dict.get(key)
-            return move
+    def positionnal_play(self, board, player):
+        score = 0
+        opponent = 'O' if player.token == 'X' else 'X'
 
-    def absolute_play(self, player):
+        for i in range(8):
+            for j in range(8):
+                if board.board[i][j] == player.token:
+                    score += WEIGHTS[i][j]
+                elif board.board[i][j] == opponent:
+                    score -= WEIGHTS[i][j]
+        return score
+
+    def absolute_play(self,board, player):
+        board.getScore(player)
         score = player.score
-        move = ()
-        dict = self.find_a_correct_move(player)
-        if not dict:
-            return move
-        else:
-            for key in dict:
-                self.clear_board()
-                b = self.get_copy()
-                b.playMove(dict.get(key), player)
-                b.getScore(player)
-                if player.score > score:
-                    score = player.score
-                    move = dict.get(key)
-            return move
-
-    def min_value(self, depth, max_depth, player):
-        if depth == max_depth or self.is_terminal():
-            return self.positional_evaluation(player), None
-
-        v = float('inf')
-        best_move = None
-        for move in self.find_a_correct_move(player):
-            copied_board = self.get_copy()
-            copied_board.playMove(move, player)
-            value, _ = copied_board.max_value(depth + 1, max_depth, player)
-            if value < v:
-                v = value
-                best_move = move
-        return v, best_move
-
-    def max_value(self, depth, max_depth, player):
-        if depth == max_depth or self.is_terminal():
-            return self.positional_evaluation(player), None
-
-        v = float('-inf')
-        best_move = None
-        for move in self.find_a_correct_move(player):
-            copied_board = self.get_copy()
-            copied_board.playMove(move, player)
-            value, _ = copied_board.min_value(depth + 1, max_depth, player)
-            if value > v:
-                v = value
-                best_move = move
-        return v, best_move
+        return score
 
     def opponent(self, player):
         opponent = Player("Opponent", "O" if player.token == "X" else "X")

@@ -121,48 +121,62 @@ def newGame():
                     print("It's sadly a tie.")
                 endGame = True
     else:
-        ai1 = Player("Computer 1", "X")
-        ai2 = Player("Computer 2", "O")
-        board = Board()
-        currentPlayer = 1
-        ai11canMove = True
-        ai2canMove = True
-        while not endGame:
-            board.clear_board()
-            if currentPlayer == 1:
-                ai11canMove = board.play_ai(ai1)
+        n = 0
+        winAi = 0
+        winRand = 0
+        tie = 0
+        while n < 100:
+            res = IA_sim()
+            print(res)
+            if res == 1:
+                winAi += 1
+            elif res == 2:
+                winRand += 1
             else:
-                ai2canMove = board.play_ai(ai2)
-                #bite = board.find_a_correct_move(ai2)
-                #if not bite:
-                #   ai2canMove = False
-                #else:
-                    #rand = random.randint(0, len(bite) - 1)
+                tie +=1
+            n += 1
+        print(f"Fin de la simu Win ia : {winAi} win rand : {winRand} egalité : {tie}")
 
-                # #   move_index = random.choice(list(bite.keys()))
-                # board.playMove(bite[move_index], ai2)
+def IA_sim():
+    endGame = False
+    nbCoup = 0
+    ai1 = Player("Computer 1", "X")
+    ai2 = Player("Computer 2", "O")
+    board = Board()
+    currentPlayer = 1
+    ai11canMove = True
+    ai2canMove = True
+    while not endGame:
+        board.clear_board()
+        if currentPlayer == 1:
+            ai11canMove = board.make_best_move(ai1, nbCoup)
+        else:
+            # ai2canMove = board.make_best_move(ai1, nbCoup)
+            bite = board.find_a_correct_move(ai2)
+            if not bite:
+                ai2canMove = False
+            else:
+                rand = random.randint(0, len(bite) - 1)
 
-                    #board.playMove(bite[rand], ai2)
-                #    ai2canMove = True
-            board.getScore(ai1)
-            board.getScore(ai2)
-            board.print_board()
-            print(f"Actual score {ai1.name} : {ai1.score}, {ai2.name} : {ai2.score}")
+                move_index = random.choice(list(bite.keys()))
+                board.playMove(bite[move_index], ai2)
 
+                # board.playMove(bite[rand], ai2)
+                ai2canMove = True
+        board.getScore(ai1)
+        board.getScore(ai2)
 
-
-            # Switch player
-            currentPlayer = 1 if currentPlayer == 2 else 2
-            if not ai11canMove and not ai2canMove:
-                board.print_board()
-                print("--------Game over-------")
-                if ai1.score > ai2.score:
-                    print(f"{ai1.name} won! Congrats!")
-                elif ai2.score > ai1.score:
-                    print(f"{ai2.name} won! Congrats!")
-                else:
-                    print("It's sadly a tie.")
-                endGame = True
+        # Switch player
+        currentPlayer = 1 if currentPlayer == 2 else 2
+        nbCoup += 1
+        if not ai11canMove and not ai2canMove:
+            if ai1.score > ai2.score:
+                return 1
+            elif ai2.score > ai1.score:
+                return 2
+            else:
+                return 3
+            endGame = True
 
 
 if __name__ == '__main__':
