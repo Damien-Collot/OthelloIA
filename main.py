@@ -2,7 +2,6 @@ import time
 
 from board import Board
 from player import Player
-from token import Token
 import random
 
 
@@ -143,7 +142,7 @@ def IA_sim():
     ai1 = Player("Computer 1", "X")
     ai2 = Player("Computer 2", "O")
     board = Board()
-    currentPlayer = 1
+    currentPlayer = 2
     ai11canMove = True
     ai2canMove = True
     while not endGame:

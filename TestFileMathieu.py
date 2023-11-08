@@ -2,7 +2,6 @@ import time
 
 from board import Board
 from player import Player
-from token import Token
 
 
 def newGame():
