@@ -6,6 +6,7 @@ import random
 
 
 def newGame():
+    # Boucle pour sélectionner le mode de jeu
     while True:
         try:
             choice = int(input("Chose your mode  : 1v1 (1), 1vAI (2), AIvAI(3)\n"))
@@ -16,7 +17,9 @@ def newGame():
         except ValueError:
             print("Please enter a number.")
     endGame = False
+    # Mode 1v1: Deux joueurs humains
     if choice == 1:
+        # Initialisation des joueurs
         playerName = input("Choose a name for player 1 \n")
         p1 = Player(playerName, "X")
         playerName = input("Choose a name for player 2\n")
@@ -25,8 +28,9 @@ def newGame():
         currentPlayer = 1
         player1canMove = True
         player2canMove = True
-
+        # Boucle principale de jeu
         while not endGame:
+            # Logique de jeu pour 1v1
             current_player_obj = p1 if currentPlayer == 1 else p2
             board.clear_board()
             dictAvailableMove = board.find_a_correct_move(current_player_obj)
@@ -70,7 +74,10 @@ def newGame():
                 else:
                     print("It's sadly a tie.")
                 endGame = True
+    # Mode 1vAI: Joueur humain contre IA
     elif choice == 2:
+        # Initialisation du joueur humain et de l'IA
+        # Logique de jeu pour 1vAI
         playerName = input("Choose a name for player 1 \n")
         p1 = Player(playerName, "X")
         choice_ai = int(input("Choose algorithm for AI 1 : 1(positional) 2(mobility) 3(absolute) 4(mixte)\n"))
@@ -132,7 +139,10 @@ def newGame():
                 else:
                     print("It's sadly a tie.")
                 endGame = True
+    # Mode AIvAI: Deux IA jouent l'une contre l'autre
     else:
+        # Simulation de jeu entre deux IA
+        # Logique de jeu pour AIvAI
         n = 0
         winAi = 0
         winRand = 0
@@ -150,6 +160,9 @@ def newGame():
         print(f"Fin de la simu Win Ia 1 : {winAi} win Ia 2 : {winRand} egalité : {tie}")
 
 def IA_sim():
+    # Fonction pour simuler un jeu entre deux IA
+    # Initialisation des IA et du plateau de jeu
+    # Boucle principale de jeu pour AIvAI
     endGame = False
     nbCoup = 0
     choice_ai = int(input("Choose algorithm for AI 1 : 1(positional) 2(mobility) 3(absolute) 4(mixte)\n"))
@@ -214,4 +227,5 @@ def IA_sim():
 
 
 if __name__ == '__main__':
+    # Point d'entrée du programme pour démarrer un nouveau jeu
     newGame()
