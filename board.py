@@ -159,6 +159,7 @@ class Board:
                 return "DRAW"
         return False
 
+    # Fonction d'évaluation (mobilité) pour l'algorithme Minimax
     def mobility_evalutation(self, board, ai):
         score = 0
 
@@ -210,9 +211,16 @@ class Board:
     # Algorithme min-max avec élagage alpha-beta
     def new_min_max(self, player, depth, isMax, algo, algo2, alpha=float('-inf'), beta=float('inf'), nbCoup=0):
         if depth == 0:
-            if nbCoup < 20:
+            if algo == 'mix':
+                if nbCoup < 20:
+                    return self.positionnal_play(self, player)
+                elif nbCoup < 50:
+                    return self.mobility_evalutation(self, player)
+                else:
+                    return self.eval_absolute(self, player)
+            elif algo == 'positional':
                 return self.positionnal_play(self, player)
-            elif nbCoup < 50:
+            elif algo == 'move':
                 return self.mobility_evalutation(self, player)
             else:
                 return self.eval_absolute(self, player)
