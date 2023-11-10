@@ -18,9 +18,9 @@ def newGame():
     endGame = False
     if choice == 1:
         playerName = input("Choose a name for player 1 \n")
-        p1 = Player(playerName, "X", False)
+        p1 = Player(playerName, "X")
         playerName = input("Choose a name for player 2\n")
-        p2 = Player(playerName, "O", False)
+        p2 = Player(playerName, "O")
         board = Board()
         currentPlayer = 1
         player1canMove = True
@@ -73,11 +73,23 @@ def newGame():
     elif choice == 2:
         playerName = input("Choose a name for player 1 \n")
         p1 = Player(playerName, "X")
-        ai = Player("Computer", "O")
+        choice_ai = int(input("Choose algorithm for AI 1 : 1(positional) 2(mobility) 3(absolute) 4(mixte)\n"))
+        name_ai = ''
+        match choice_ai:
+            case 1:
+                name_ai = 'positional'
+            case 2:
+                name_ai = 'move'
+            case 3:
+                name_ai = 'absolute'
+            case _:
+                name_ai = 'mix'
+        ai = Player(name_ai, "O")
         board = Board()
         currentPlayer = 1
         player1canMove = True
         aicanMove = True
+        nbCoup = 0
         while not endGame:
             current_player_obj = p1 if currentPlayer == 1 else ai
             board.clear_board()
@@ -100,7 +112,7 @@ def newGame():
 
                     board.playMove(dictAvailableMove.get(move), current_player_obj)
             else:
-                aicanMove = board.play_ai(ai)
+                aicanMove = board.make_best_move(ai, nbCoup, ai.name, ai.name)
             board.print_board()
             board.getScore(p1)
             board.getScore(ai)
@@ -109,6 +121,7 @@ def newGame():
 
             # Switch player
             currentPlayer = 1 if currentPlayer == 2 else 2
+            nbCoup += 1
             if not player1canMove and not aicanMove:
                 board.print_board()
                 print("--------Game over-------")
@@ -124,7 +137,7 @@ def newGame():
         winAi = 0
         winRand = 0
         tie = 0
-        while n < 100:
+        while n < 1:
             res = IA_sim()
             print(res)
             if res == 1:
@@ -134,34 +147,57 @@ def newGame():
             else:
                 tie +=1
             n += 1
-        print(f"Fin de la simu Win ia : {winAi} win rand : {winRand} egalité : {tie}")
+        print(f"Fin de la simu Win Ia 1 : {winAi} win Ia 2 : {winRand} egalité : {tie}")
 
 def IA_sim():
     endGame = False
     nbCoup = 0
-    ai1 = Player("Computer 1", "X")
-    ai2 = Player("Computer 2", "O")
+    choice_ai = int(input("Choose algorithm for AI 1 : 1(positional) 2(mobility) 3(absolute) 4(mixte)\n"))
+    name_ai = ''
+    match choice_ai:
+        case 1:
+            name_ai = 'positional'
+        case 2:
+            name_ai = 'move'
+        case 3:
+            name_ai = 'absolute'
+        case _:
+            name_ai = 'mix'
+
+    ai1 = Player(name_ai, "O")
+    choice_ai = int(input("Choose algorithm for AI 1 : 1(positional) 2(mobility) 3(absolute) 4(mixte)\n"))
+    name_ai = ''
+    match choice_ai:
+        case 1:
+            name_ai = 'positional'
+        case 2:
+            name_ai = 'move'
+        case 3:
+            name_ai = 'absolute'
+        case _:
+            name_ai = 'mix'
+    ai2 = Player(name_ai, "X")
     board = Board()
-    currentPlayer = 2
+    currentPlayer = 1
     ai11canMove = True
     ai2canMove = True
     while not endGame:
         board.clear_board()
         if currentPlayer == 1:
-            ai11canMove = board.make_best_move(ai1, nbCoup)
+            ai11canMove = board.make_best_move(ai1, nbCoup, ai1.name, ai2.name)
         else:
-            # ai2canMove = board.make_best_move(ai1, nbCoup)
-            bite = board.find_a_correct_move(ai2)
-            if not bite:
-                ai2canMove = False
-            else:
-                rand = random.randint(0, len(bite) - 1)
+            ai2canMove = board.make_best_move(ai2, nbCoup, ai2.name, ai1.name)
+            #git = board.find_a_correct_move(ai2)
+            #if not git:
+            #    ai2canMove = False
+            #else:
+            #    rand = random.randint(0, len(git) - 1)
 
-                move_index = random.choice(list(bite.keys()))
-                board.playMove(bite[move_index], ai2)
+            #    move_index = random.choice(list(git.keys()))
+            #    board.playMove(git[move_index], ai2)
 
-                # board.playMove(bite[rand], ai2)
-                ai2canMove = True
+                # board.playMove(git[rand], ai2)
+            #    ai2canMove = True
         board.getScore(ai1)
         board.getScore(ai2)
 
@@ -175,7 +211,6 @@ def IA_sim():
                 return 2
             else:
                 return 3
-            endGame = True
 
 
 if __name__ == '__main__':

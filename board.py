@@ -160,6 +160,8 @@ class Board:
         return False
 
     def mobility_evalutation(self, board, ai):
+        score = 0
+
         # Maximise le nombre de coups possible
         ai_moves = len(board.find_a_correct_move(Player("Temp", ai)))
         board.clear_board()
@@ -168,15 +170,16 @@ class Board:
         board.clear_board()
 
         # Favoriser les coins.
-        corner_bonus = 0
-        for x, y in [(0, 0), (0, 7), (7, 0), (7, 7)]:
-            if board.board[x][y] == ai.token:
-                corner_bonus += 5
-            elif board.board[x][y] == opponent_token:
-                corner_bonus -= 5
+        for move in [(0,0), (7,7), (0,7), (7,0)]:
+            i,j = move
+            if board.board[i][j] == ai.token:
+                score += 500
+            elif board.board[i][j] == opponent_token:
+                score -= 500
 
-        return (ai_moves - opponent_moves) + corner_bonus
+        return (ai_moves - opponent_moves) + score
 
+    # Fonction d'évaluation (positionnel) pour l'algorithme Minimax
     def positionnal_play(self, board, player):
         score = 0
         opponent = 'O' if player.token == 'X' else 'X'
@@ -189,9 +192,13 @@ class Board:
                     score -= WEIGHTS[i][j]
         return score
 
-    def absolute_play(self,board, player):
-        board.getScore(player)
-        score = player.score
+    # # Fonction d'évaluation (absolue) pour l'algorithme Minimax
+    def eval_absolute(self, board, player):
+        score = 0
+        for row in board.board:
+            for cell in row:
+                if cell == player.token:
+                    score += 1
         return score
 
     def opponent(self, player):
@@ -200,49 +207,22 @@ class Board:
         else:
             return Player("Opponent", "X")
 
-
-    def minimax(self, board, depth, maximizing_player, player, nbCoup):
-        if depth == 0:
-            if nbCoup < 20:
-                return self.positionnal_play(board, player)
-            elif nbCoup < 50:
-                return self.mobility_evalutation(board, player)
-            else:
-                return self.absolute_play(board, player)
-
-        max_eval = float('-inf')
-        min_eval = float('inf')
-        legal_moves = board.find_a_correct_move(player)
-        board.clear_board()
-
-        for position in legal_moves.values():
-            if maximizing_player:
-                new_board = board.get_copy()
-                new_board.playMove(position, player)
-                eval = self.minimax(new_board, depth - 1, False, self.opponent(player), nbCoup+1)
-                max_eval = max(max_eval, eval)
-            else:
-                new_board = board.get_copy()
-                new_board.playMove(position, player)
-                eval = self.minimax(new_board, depth - 1, True, self.opponent(player), nbCoup+1)
-                min_eval = min(min_eval, eval)
-        return max_eval
-
-    def new_min_max(self, player, depth, isMax, alpha=float('-inf'), beta=float('inf'), nbCoup=0):
+    # Algorithme min-max avec élagage alpha-beta
+    def new_min_max(self, player, depth, isMax, algo, algo2, alpha=float('-inf'), beta=float('inf'), nbCoup=0):
         if depth == 0:
             if nbCoup < 20:
                 return self.positionnal_play(self, player)
             elif nbCoup < 50:
                 return self.mobility_evalutation(self, player)
             else:
-                return self.absolute_play(self, player)
+                return self.eval_absolute(self, player)
 
         if isMax:
             maxEval = float('-inf')
             for move in self.find_a_correct_move(player).values():
                 new_board = self.get_copy()
                 new_board.playMove(move, player)
-                eval = new_board.new_min_max(self.opponent(player), depth - 1, False, alpha, beta, nbCoup+1)
+                eval = new_board.new_min_max(self.opponent(player), depth - 1, False, algo2, algo, alpha, beta, nbCoup+1)
                 if eval > maxEval:
                     maxEval = eval
                 alpha = max(alpha, eval)
@@ -254,7 +234,7 @@ class Board:
             for move in self.find_a_correct_move(player).values():
                 new_board = self.get_copy()
                 new_board.playMove(move, player)
-                eval = new_board.new_min_max(self.opponent(player), depth - 1, True, alpha, beta, nbCoup+1)
+                eval = new_board.new_min_max(self.opponent(player), depth - 1, True, algo2, algo, alpha, beta, nbCoup+1)
                 if eval < minEval:
                     minEval = eval
                 beta = min(beta, eval)
@@ -263,7 +243,8 @@ class Board:
             return minEval
 
 
-    def make_best_move(self, player, nbCoup):
+    # Sélectionne et joue le meilleur coup pour un joueur donné en utilisant l'algorithme Minimax.
+    def make_best_move(self, player, nbCoup, algo, algo2):
         best_move = float('-inf')
         best_pos = ()
         board = self.get_copy()
@@ -271,7 +252,9 @@ class Board:
         board.clear_board()
 
         for position in legal_moves.values():
-            move = self.new_min_max(player, 3, True, float('-inf'), float('inf'), nbCoup)
+            board = self.get_copy()
+            board.playMove(position, player)
+            move = board.new_min_max(self.opponent(player), 3, False, algo2, algo, float('-inf'), float('inf'), nbCoup+1)
             if move > best_move:
                 best_move = move
                 best_pos = position
